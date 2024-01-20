@@ -7,13 +7,16 @@ export class GithubUseCase {
     return new GithubUseCase(githubRepository);
   }
 
-  async listAllRepositories(): Promise<GithubRepositoryEntity[]> {
+  async listAllRepositories(): Promise<[GithubRepositoryEntity[], Error]> {
     return this.githubRepository.getAll();
   }
 
   async searchRepositoriesByName(
     keyword: string
-  ): Promise<GithubRepositoryEntity[]> {
+  ): Promise<[GithubRepositoryEntity[], Error]> {
+    if (!keyword) {
+      throw new Error("Search keyword is required.");
+    }
     return this.githubRepository.searchByName(keyword);
   }
 }
