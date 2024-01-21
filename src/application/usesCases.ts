@@ -17,6 +17,6 @@ export class GithubUseCase {
     if (!keyword) {
       throw new Error("Search keyword is required.");
     }
-    return this.githubRepository.searchByName(keyword);
+    return this.githubRepository.searchByOwnerName(keyword);
   }
 }
