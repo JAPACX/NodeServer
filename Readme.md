@@ -193,44 +193,47 @@ These naming policies are designed to create consistency and improve code readab
 # Database Modeling
 
 ```sql
+-- Enable the uuid-ossp extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- Users Table
 CREATE TABLE Users (
-  UserID INT PRIMARY KEY,
+  UserID UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   UserName VARCHAR(50) NOT NULL,
   Email VARCHAR(255) NOT NULL,
-  Password VARCHAR(255) NOT NULL
+  Password VARCHAR(255) NOT NULL CHECK (LENGTH(Password) >= 8)
 );
 
 -- Authors Table
 CREATE TABLE Authors (
-  AuthorID INT PRIMARY KEY,
+  AuthorID UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   AuthorName VARCHAR(100) NOT NULL,
   Biography TEXT
 );
 
 -- Collaborators Table
 CREATE TABLE Collaborators (
-  CollaboratorID INT PRIMARY KEY,
+  CollaboratorID UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   CollaboratorName VARCHAR(100) NOT NULL,
   CollaboratorDescription TEXT
 );
 
 -- Videos Table
 CREATE TABLE Videos (
-  VideoID INT PRIMARY KEY,
+  VideoID UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   Title VARCHAR(255) NOT NULL,
   URL VARCHAR(255) NOT NULL,
-  AuthorID INT,
-  CollaboratorID INT,
+  AuthorID UUID,
+  CollaboratorID UUID,
   FOREIGN KEY (AuthorID) REFERENCES Authors(AuthorID),
   FOREIGN KEY (CollaboratorID) REFERENCES Collaborators(CollaboratorID)
 );
 
 -- Comments Table
 CREATE TABLE Comments (
-  CommentID INT PRIMARY KEY,
-  UserID INT,
-  VideoID INT,
+  CommentID UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  UserID UUID,
+  VideoID UUID,
   Content TEXT NOT NULL,
   PublicationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (UserID) REFERENCES Users(UserID),
@@ -239,9 +242,9 @@ CREATE TABLE Comments (
 
 -- Reviews Table
 CREATE TABLE Reviews (
-  ReviewID INT PRIMARY KEY,
-  UserID INT,
-  VideoID INT,
+  ReviewID UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  UserID UUID,
+  VideoID UUID,
   Rating INT CHECK (Rating >= 1 AND Rating <= 5),
   Comment TEXT,
   ReviewDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -249,27 +252,36 @@ CREATE TABLE Reviews (
   FOREIGN KEY (VideoID) REFERENCES Videos(VideoID)
 );
 
--- Trigger to validate that the password has at least 8 characters
-CREATE TRIGGER validate_password_length
-BEFORE INSERT ON Users
-FOR EACH ROW
+-- Trigger to validate the password length
+CREATE OR REPLACE FUNCTION validate_password_length()
+RETURNS TRIGGER AS $$
 BEGIN
   IF LENGTH(NEW.Password) < 8 THEN
-    SIGNAL SQLSTATE '45000
-
-'
-    SET MESSAGE_TEXT = 'Password must have at least 8 characters';
+    RAISE EXCEPTION 'Password must have at least 8 characters';
   END IF;
+  RETURN NEW;
 END;
+$$ LANGUAGE plpgsql;
 
--- Trigger to validate that the comment is not empty
-CREATE TRIGGER validate_comment_content
-BEFORE INSERT ON Comments
+CREATE TRIGGER before_insert_validate_password_length
+BEFORE INSERT ON Users
 FOR EACH ROW
+EXECUTE FUNCTION validate_password_length();
+
+-- Trigger to validate that the comment content is not empty
+CREATE OR REPLACE FUNCTION validate_comment_content()
+RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.Content = '' THEN
-    SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'Comment content cannot be empty';
+    RAISE EXCEPTION 'Comment content cannot be empty';
   END IF;
+  RETURN NEW;
 END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER before_insert_validate_comment_content
+BEFORE INSERT ON Comments
+FOR EACH ROW
+EXECUTE FUNCTION validate_comment_content();
+
 ```
