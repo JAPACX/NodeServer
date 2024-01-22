@@ -7,16 +7,29 @@ export class GithubUseCase {
     return new GithubUseCase(githubRepository);
   }
 
-  async listAllRepositories(): Promise<GithubRepositoryEntity[] | Error> {
-    return this.githubRepository.getAll();
-  }
-
-  async searchRepositoriesByName(
-    keyword: string
+  async getRepositories(
+    username: string,
+    page?: number,
+    per_page?: number,
+    mostPopularFirst?: boolean
   ): Promise<GithubRepositoryEntity[] | Error> {
-    if (!keyword) {
-      throw new Error("Search keyword is required.");
+    if (!username || username === "") {
+      return new Error("Username is required");
     }
-    return this.githubRepository.searchByOwnerName(keyword);
+
+    if (per_page && per_page < 1) {
+      return new Error("Per page must be greater than 0");
+    }
+
+    if (per_page && per_page > 100) {
+      return new Error("Per page must be less than 100");
+    }
+
+    return this.githubRepository.getRepositories(
+      username,
+      page,
+      per_page,
+      mostPopularFirst
+    );
   }
 }

@@ -1,18 +1,31 @@
-export const books = [
-  {
-    title: "The Awakening",
-    author: "Kate Chopin",
-  },
-  {
-    title: "City of Glass",
-    author: "Paul Auster",
-  },
-];
+import { GithubUseCase } from "../../application/useCases";
 
-// Resolvers define how to fetch the types defined in your schema.
-// This resolver retrieves books from the "books" array above.
 export const resolvers = {
   Query: {
-    books: () => books,
+    GetRepositories: async (
+      _: any,
+      args: {
+        username: string;
+        page?: number;
+        per_page?: number;
+        mostPopularFirst?: boolean;
+      },
+      { useCases }: { useCases: GithubUseCase }
+    ) => {
+      try {
+        const { username, page, per_page, mostPopularFirst } = args;
+        const result = await useCases.getRepositories(
+          username,
+          page,
+          per_page,
+          mostPopularFirst
+        );
+
+        return result;
+      } catch (error) {
+        console.error("Error fetching repositories:", error);
+        throw new Error("Failed to fetch repositories");
+      }
+    },
   },
 };

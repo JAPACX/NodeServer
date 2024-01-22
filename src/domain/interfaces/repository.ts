@@ -1,6 +1,10 @@
 import { GithubRepositoryEntity } from "../entities/repository";
 
 export interface GithubRepositoryInterface {
-  getAll(): Promise<GithubRepositoryEntity[] | Error>;
-  searchByOwnerName(keyword: string): Promise<GithubRepositoryEntity[] | Error>;
+  getRepositories(
+    username: string,
+    page?: number,
+    per_page?: number,
+    mostPopularFirst?: boolean
+  ): Promise<GithubRepositoryEntity[] | Error>;
 }
