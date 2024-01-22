@@ -1,28 +1,19 @@
 import { GithubRepositoryInterface } from "../../domain/interfaces/repository";
 import { GithubRepositoryEntity } from "../../domain/entities/repository";
-
-const newEntity = new GithubRepositoryEntity();
-newEntity.title = 1;
-newEntity.author = "github-repository-1";
+import axios from "axios";
 
 export class DataSourceRepository implements GithubRepositoryInterface {
-  async getAll(): Promise<GithubRepositoryEntity[] | Error> {
+  async getRepositories(): Promise<GithubRepositoryEntity[] | Error> {
     try {
-      const repositories: GithubRepositoryEntity[] = [newEntity];
-      return repositories;
-    } catch (error) {
-      return new Error("Error");
-    }
-  }
+      const response = await axios.get(
+        "https://api.github.com/users/google/repos"
+      );
+      const repositories = response.data;
 
-  async searchByOwnerName(
-    keyword: string
-  ): Promise<GithubRepositoryEntity[] | Error> {
-    try {
-      const repositories: GithubRepositoryEntity[] = [newEntity];
       return repositories;
     } catch (error) {
-      return new Error("Error");
+      console.error("Error fetching repositories:", error);
+      throw new Error("Failed to fetch repositories");
     }
   }
 }
