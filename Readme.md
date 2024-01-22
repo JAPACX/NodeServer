@@ -1,3 +1,126 @@
+# Backend For Frontend Project with Hexagonal Architecture in TypeScript and Node.js
+
+This project implements a hexagonal architecture and adheres to best practices for creating a Backend For Frontend (BFF) that consumes the GitHub API. Below is a detailed documentation of the project.
+
+![Alt text](/assets/banner.png)
+
+## Project Structure
+
+The project structure is organized in layers following the hexagonal architecture pattern. It can be initiated in two ways: by using Docker or by executing the commands `npm install`, `npm run build`, and `npm start` at the project root.
+
+```bash
+# Start with Docker
+docker-compose up
+
+# Or
+
+# Install dependencies and run
+npm install
+npm run build
+npm start
+```
+
+## Use Cases in the Application Layer
+
+Use cases reside in the application layer and are represented by the `GithubUseCase` class. They orchestrate business logic and utilize the repository interface to fetch GitHub repositories.
+
+```typescript
+import { GithubRepositoryInterface } from "../domain/interfaces/repository";
+import { GithubRepositoryEntity } from "../domain/entities/repository";
+
+export class GithubUseCase {
+  constructor(private githubRepository: GithubRepositoryInterface) {}
+
+  static create(githubRepository: GithubRepositoryInterface): GithubUseCase {
+    return new GithubUseCase(githubRepository);
+  }
+
+  async getRepositories(
+    username: string,
+    page?: number,
+    per_page?: number,
+    mostPopularFirst?: boolean
+  ): Promise<GithubRepositoryEntity[] | Error> {
+    // Parameter validations
+    // ...
+
+    return this.githubRepository.getRepositories(
+      username,
+      page,
+      per_page,
+      mostPopularFirst
+    );
+  }
+}
+```
+
+## Interfaces in the Domain Layer
+
+Interfaces in the domain layer define contracts for repositories and entities used in the system.
+
+```typescript
+import { GithubRepositoryEntity } from "../entities/repository";
+
+export interface GithubRepositoryInterface {
+  getRepositories(
+    username: string,
+    page?: number,
+    per_page?: number,
+    mostPopularFirst?: boolean
+  ): Promise<GithubRepositoryEntity[] | Error>;
+}
+```
+
+## Data Source: Calling the GitHub API
+
+The `DataSourceRepository` class implements the repository interface and uses Axios to make calls to the GitHub API.
+
+```typescript
+import { GithubRepositoryInterface } from "../../domain/interfaces/repository";
+import { GithubRepositoryEntity } from "../../domain/entities/repository";
+import axios from "axios";
+
+export class DataSourceRepository implements GithubRepositoryInterface {
+  async getRepositories(
+    username: string,
+    page?: number,
+    per_page?: number,
+    mostPopularFirst?: boolean
+  ): Promise<GithubRepositoryEntity[] | Error> {
+    // GitHub API call
+    // ...
+
+    return repositories;
+  }
+}
+```
+
+## Best Practices and Considerations
+
+- **Optional Parameters in GraphQL Query:** Optional parameters in the GraphQL query have been implemented to allow customization of the requested information.
+
+- **Flexibility in Data Source:** The repository implementation using an interface allows for easily changing the data source, for example, migrating to another API or database, without impacting the application logic.
+
+- **Decoupling of External Dependencies:** Utilizing the repository interface facilitates the decoupling of external dependencies, such as the GitHub API, enabling easy substitution in the future.
+
+- **Adaptability to Changes:** The hexagonal architecture allows for easy adaptability to changes in application, domain, or infrastructure layers without affecting other parts of the system.
+
+## Conclusion
+
+This project adheres to best practices in hexagonal architecture, promoting flexibility and adaptability. The separation of layers and the use of interfaces provide a solid foundation for future changes in the data source or implementation of use cases without compromising the integrity of the system. Clear documentation and modular structure facilitate maintainability and scalability of the project.
+
+References
+Backend For Frontend Pattern: Why You Need to Know It
+https://medium.com/mobilepeople/backend-for-frontend-pattern-why-you-need-to-know-it-46f94ce420b0
+
+GitHub REST API Documentation
+https://docs.github.com/en/rest/users?apiVersion=2022-11-28
+
+Hexagonal Architecture
+https://fideloper.com/hexagonal-architecture
+
+# Other points of the technical test.
+
 # Code Naming
 
 ```javascript
@@ -192,7 +315,7 @@ These naming policies are designed to create consistency and improve code readab
 
 # Database Modeling
 
-![Diagram](image.png)
+![Diagram](/assets/databaseDiagram.png)
 
 ```sql
 -- Enable the uuid-ossp extension
