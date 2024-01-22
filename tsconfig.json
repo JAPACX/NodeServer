@@ -5,6 +5,11 @@
     "lib": ["es2020"],
     "target": "es2020",
     "module": "esnext",
+    "type": "module",
+    "scripts": {
+      "compile": "tsc",
+      "start": "npm run compile && node ./dist/index.js"
+    },
     "moduleResolution": "node",
     "esModuleInterop": true,
     "types": ["node"]
