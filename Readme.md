@@ -192,6 +192,8 @@ These naming policies are designed to create consistency and improve code readab
 
 # Database Modeling
 
+![Diagram](image.png)
+
 ```sql
 -- Enable the uuid-ossp extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
